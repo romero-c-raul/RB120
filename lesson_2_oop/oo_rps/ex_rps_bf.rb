@@ -148,9 +148,9 @@ end
 
 # Game Orchestration Engine
 class RPSGame
-  attr_accessor :human, :computer, :score
+  attr_accessor :human, :computer, :score, :move_history
 
-  WINNING_SCORE = 10
+  WINNING_SCORE = 3
 
   def initialize
     @human = Human.new
@@ -178,6 +178,8 @@ class RPSGame
     else
       puts "It's a tie!"
     end
+
+    update_scoreboard
   end
 
   def play_again?
@@ -193,14 +195,16 @@ class RPSGame
     answer == 'y'
   end
 
-  def game_over?
-    true if human.wins >= WINNING_SCORE || computer.wins >= WINNING_SCORE
-  end
-
   def start_next_round
     puts "Press enter to start next round!"
     gets.chomp
     system 'clear'
+    nil
+  end
+
+  def game_over?
+    return true if human.wins >= WINNING_SCORE || computer.wins >= WINNING_SCORE
+    start_next_round
   end
 
   def display_scoreboard
@@ -221,6 +225,8 @@ class RPSGame
   end
 
   def display_game_winner
+    display_scoreboard
+
     if human.wins > computer.wins
       puts "#{human.name} is the grand winner!"
     else
@@ -228,21 +234,22 @@ class RPSGame
     end
   end
 
+  def players_choose
+    human.choose
+    computer.choose
+  end
+
   def play
     display_welcome_message
 
     loop do
       display_scoreboard
-      human.choose
-      computer.choose
+      players_choose
       display_moves
       display_round_winner
-      update_scoreboard
       break if game_over?
-      start_next_round
     end
 
-    display_scoreboard
     display_game_winner
     display_goodbye_message
   end
@@ -263,6 +270,11 @@ RPSGame.new.play
 
 - Add class for each move
   - Pros: It makes it easier to read which moves win/lose agains other moves
-  - Cons: It is easier to make mistakes with the logic, and methods '<'/'>' are being
-    repeated constantly
+  - Cons: It is easier to make mistakes with the logic, and methods '<'/'>'
+  are being repeated constantly
+
+- Keep track of history moves
+  - Have move history be stored in an instance variable within computer and
+    human object OR
+  - Have it be store in an instance var within RPSGame object
 =end
