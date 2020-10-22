@@ -1,4 +1,6 @@
 class Move
+  attr_reader :value
+
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock']
 
   def initialize(value)
@@ -16,33 +18,87 @@ class Move
   def paper?
     @value == 'paper'
   end
-  
+
   def lizard?
     @value == 'lizard'
   end
-  
+
   def spock?
     @value == 'spock'
   end
 
+  def to_s
+    @value
+  end
+end
+
+class Rock < Move
+  def initialize
+    @value = 'rock'
+  end
+
   def >(other_move)
-    rock? && (other_move.scissors? || other_move.lizard?) ||
-      paper? && (other_move.rock? || other_move.spock?) ||
-      scissors? && (other_move.paper? || other_move.lizard?) ||
-      lizard? && (other_move.paper? || other_move.spock?) ||
-      spock? && (other_move.rock? || other_move.scissors?)
+    value && (other_move.scissors? || other_move.lizard?)
   end
 
   def <(other_move)
-    rock? && (other_move.paper? || other_move.spock?) ||
-      paper? && (other_move.scissors? || other_move.lizard?) ||
-      scissors? && (other_move.rock? || other_move.spock?) ||
-      lizard? && (other_move.rock? || other_move.scissors?) ||
-      spock? && (other_move.paper? || other_move.lizard?)
+    value && (other_move.paper? || other_move.spock?)
+  end
+end
+
+class Paper < Move
+  def initialize
+    @value = 'paper'
   end
 
-  def to_s
-    @value
+  def >(other_move)
+    value && (other_move.rock? || other_move.spock?)
+  end
+
+  def <(other_move)
+    value && (other_move.scissors? || other_move.lizard?)
+  end
+end
+
+class Scissors < Move
+  def initialize
+    @value = 'scissors'
+  end
+
+  def >(other_move)
+    value && (other_move.paper? || other_move.lizard?)
+  end
+
+  def <(other_move)
+    value && (other_move.rock? || other_move.spock?)
+  end
+end
+
+class Lizard < Move
+  def initialize
+    @value = 'lizard'
+  end
+
+  def >(other_move)
+    value && (other_move.paper? || other_move.spock?)
+  end
+
+  def <(other_move)
+    value && (other_move.rock? || other_move.scissors?)
+  end
+end
+
+class Spock < Move
+  def initialize
+    @value = 'spock'
+  end
+
+  def >(other_move)
+    value && (other_move.rock? || other_move.scissors?)
+  end
+
+  def <(other_move)
+    value && (other_move.paper? || other_move.lizard?)
   end
 end
 
@@ -72,10 +128,10 @@ class Human < Player
     loop do
       puts "Please choose rock, paper, scissors, lizard, or spock:"
       choice = gets.chomp
-      break if Move::VALUES.include? choice.downcase
+      break if Move::VALUES.include? choice
       puts "Sorry, invalid choice"
     end
-    self.move = Move.new(choice)
+    self.move = Kernel.const_get(choice.capitalize).new
   end
 end
 
@@ -85,7 +141,8 @@ class Computer < Player
   end
 
   def choose
-    self.move = Move.new(Move::VALUES.sample)
+    select_move = Move::VALUES.sample.capitalize
+    self.move = Kernel.const_get(select_move).new
   end
 end
 
@@ -93,7 +150,7 @@ end
 class RPSGame
   attr_accessor :human, :computer, :score
 
-  WINNING_SCORE = 3
+  WINNING_SCORE = 10
 
   def initialize
     @human = Human.new
@@ -176,9 +233,11 @@ class RPSGame
 
     loop do
       display_scoreboard
-      human.choose; computer.choose
+      human.choose
+      computer.choose
       display_moves
-      display_round_winner; update_scoreboard
+      display_round_winner
+      update_scoreboard
       break if game_over?
       start_next_round
     end
@@ -202,4 +261,8 @@ RPSGame.new.play
   - add lizard and spock to values, write a getter method for both of them
   - Implement comparison within '>' and '<'
 
+- Add class for each move
+  - Pros: It makes it easier to read which moves win/lose agains other moves
+  - Cons: It is easier to make mistakes with the logic, and methods '<'/'>' are being
+    repeated constantly
 =end
