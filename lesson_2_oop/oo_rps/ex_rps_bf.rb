@@ -103,11 +103,12 @@ class Spock < Move
 end
 
 class Player
-  attr_accessor :move, :name, :wins
+  attr_accessor :move, :name, :wins, :move_history
 
   def initialize
     set_name
     @wins = 0
+    @move_history = []
   end
 end
 
@@ -132,6 +133,7 @@ class Human < Player
       puts "Sorry, invalid choice"
     end
     self.move = Kernel.const_get(choice.capitalize).new
+    move_history << move
   end
 end
 
@@ -143,12 +145,13 @@ class Computer < Player
   def choose
     select_move = Move::VALUES.sample.capitalize
     self.move = Kernel.const_get(select_move).new
+    move_history << move
   end
 end
 
 # Game Orchestration Engine
 class RPSGame
-  attr_accessor :human, :computer, :score, :move_history
+  attr_accessor :human, :computer, :score
 
   WINNING_SCORE = 3
 
@@ -238,6 +241,14 @@ class RPSGame
     human.choose
     computer.choose
   end
+  
+  def print_history
+    puts ""
+    puts "The following is #{human.name} move history:"
+    puts human.move_history
+    puts "The following is #{computer.name} move history:"
+    puts computer.move_history
+  end
 
   def play
     display_welcome_message
@@ -252,6 +263,7 @@ class RPSGame
 
     display_game_winner
     display_goodbye_message
+    print_history
   end
 end
 
