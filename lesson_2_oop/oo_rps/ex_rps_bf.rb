@@ -107,7 +107,6 @@ class Player
 
   def initialize
     set_name
-    @wins = 0
     @move_history = []
   end
 end
@@ -135,17 +134,69 @@ class Human < Player
     self.move = Kernel.const_get(choice.capitalize).new
     move_history << move
   end
+  puts ""
 end
 
 class Computer < Player
+  ROBOTS = ['R2D2', 'Hal', 'Chappie', 'Sonny', 'Number5']
+end
+
+class R2D2 < Computer
   def set_name
-    self.name = ['R2D2', 'Hal', 'Chappie', 'Sonny', 'Number 5'].sample
+    self.name = 'R2D2'
   end
 
   def choose
-    select_move = Move::VALUES.sample.capitalize
-    self.move = Kernel.const_get(select_move).new
+    self.move = Rock.new
     move_history << move
+  end
+end
+
+class Hal < Computer
+  def set_name
+    self.name = 'Hal'
+  end
+
+  def choose
+    self.move = [Scissors.new, Scissors.new, Scissors.new, Rock.new].sample
+    move_history << move
+  end
+end
+
+class Chappie < Computer
+  def set_name
+    self.name = 'Chappie'
+  end
+
+  def choose
+    self.move = Paper.new
+    move_history << move
+  end
+end
+
+class Sonny < Computer
+  def set_name
+    self.name = 'Sonny'
+  end
+
+  def choose
+    self.move = [Lizard.new, Spock.new].sample
+    move_history << move
+  end
+end
+
+class Number5 < Computer
+  @@round = 0
+
+  def set_name
+    self.name = 'Number 5'
+  end
+
+  def choose
+    self.move = [Rock.new, Paper.new, Scissors.new,
+                 Lizard.new, Spock.new][@@round]
+    move_history << move
+    @@round >= 4 ? @@round = 0 : @@round += 1
   end
 end
 
@@ -157,11 +208,11 @@ class RPSGame
 
   def initialize
     @human = Human.new
-    @computer = Computer.new
   end
 
   def display_welcome_message
-    puts "Welcome to Rock, Paper, Scissors, Lizard, Spock!"
+    puts ""
+    puts "#{human.name}! Welcome to Rock, Paper, Scissors, Lizard, Spock!"
   end
 
   def display_goodbye_message
@@ -241,40 +292,54 @@ class RPSGame
     human.choose
     computer.choose
   end
-  
+
   def print_history
     puts ""
-    puts "The following is #{human.name} move history:"
+    puts "The following is #{human.name}'s move history:"
     puts human.move_history
-    puts "The following is #{computer.name} move history:"
+    puts "-------------------"
+    puts "The following is #{computer.name}'s move history:"
     puts computer.move_history
   end
 
+  def set_initial_score_and_opponent
+    system 'clear'
+    self.computer = Kernel.const_get(Computer::ROBOTS.sample).new
+    human.wins = 0
+    computer.wins = 0
+  end
+
   def play
-    display_welcome_message
-
     loop do
-      display_scoreboard
-      players_choose
-      display_moves
-      display_round_winner
-      break if game_over?
-    end
+      set_initial_score_and_opponent
+      display_welcome_message
 
-    display_game_winner
+      loop do
+        display_scoreboard
+        players_choose
+        display_moves
+        display_round_winner
+        break if game_over?
+      end
+
+      display_game_winner
+      print_history
+      break unless play_again?
+    end
     display_goodbye_message
-    print_history
   end
 end
 
 RPSGame.new.play
 
 =begin
+
+***Notes***
 - Keeping score:
   - Create a new instance variable that keeps track of current player wins
     - Initialize instance variable for both human and computer
     - Break out of the loop when either of those variables is
-      greater or equal to 10
+      greater or equal to 10 (or chosen number)
 
 - Add lizard and spock:
   - add lizard and spock to values, write a getter method for both of them
@@ -287,6 +352,15 @@ RPSGame.new.play
 
 - Keep track of history moves
   - Have move history be stored in an instance variable within computer and
-    human object OR
-  - Have it be store in an instance var within RPSGame object
+    human object
+
+- Computer personalities
+  - Make every robot into its own class that draws from Computer superclass
+  - Within every robot class:
+    - R2D2's move will always be rock
+    - Hal will choose from an array where 4/5 options are scissors and
+      the rest rock
+    - Chappie selects only paper
+    - Sonny chooses only lizard or spock
+    - Number 5 chooses rock, paper, lizard, spock always in that order
 =end
