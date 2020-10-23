@@ -309,6 +309,7 @@ class RPSGame
     computer.wins = 0
   end
 
+  # rubocop:disable Metrics/MethodLength
   def play
     loop do
       set_initial_score_and_opponent
@@ -328,6 +329,7 @@ class RPSGame
     end
     display_goodbye_message
   end
+  # rubocop:enable Metrics/MethodLength
 end
 
 RPSGame.new.play
