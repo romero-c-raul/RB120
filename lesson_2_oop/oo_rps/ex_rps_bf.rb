@@ -204,7 +204,7 @@ end
 class RPSGame
   attr_accessor :human, :computer, :score
 
-  WINNING_SCORE = 3
+  WINNING_SCORE = 10
 
   def initialize
     @human = Human.new
@@ -213,6 +213,9 @@ class RPSGame
   def display_welcome_message
     puts ""
     puts "#{human.name}! Welcome to Rock, Paper, Scissors, Lizard, Spock!"
+    puts ""
+    puts "First player to win #{WINNING_SCORE} rounds wins the game!"
+    puts "Your opponent today will be #{computer.name}."
   end
 
   def display_goodbye_message
