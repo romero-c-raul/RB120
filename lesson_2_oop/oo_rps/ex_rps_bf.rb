@@ -113,6 +113,7 @@ end
 
 class Human < Player
   def set_name
+    system 'clear'
     n = nil
     loop do
       puts "What is your name?"
@@ -126,15 +127,37 @@ class Human < Player
   def choose
     choice = nil
     loop do
-      puts "Please choose rock, paper, scissors, lizard, or spock:"
+      puts "Please choose rock[r], paper[p], scissors[s], lizard[l], or spock[sp]:"
       choice = gets.chomp
       break if Move::VALUES.include? choice
+      break if ['r', 's', 'l', 'p', 'sp'].include? choice
       puts "Sorry, invalid choice"
     end
+    
+    choice = find_move(choice)
     self.move = Kernel.const_get(choice.capitalize).new
     move_history << move
   end
-  puts ""
+  
+  private
+  
+  def find_move(choice)
+    return choice if Move::VALUES.include? choice
+    
+    case choice
+    when 'r'
+      'rock'
+    when 'p'
+      'paper'
+    when 's'
+      'scissors'
+    when 'l'
+      'lizard'
+    when 'sp'
+      'spock'
+    end
+  end
+  
 end
 
 class Computer < Player
@@ -202,9 +225,25 @@ end
 
 # Game Orchestration Engine
 class RPSGame
-  attr_accessor :human, :computer, :score
-
   WINNING_SCORE = 10
+  
+  def play
+    loop do
+      set_initial_score_and_opponent
+      display_welcome_message
+
+      play_full_round
+
+      display_game_winner
+      print_history
+      break unless play_again?
+    end
+    display_goodbye_message
+  end
+  
+  private
+  
+  attr_accessor :human, :computer, :score
 
   def initialize
     @human = Human.new
@@ -312,27 +351,15 @@ class RPSGame
     computer.wins = 0
   end
 
-  # rubocop:disable Metrics/MethodLength
-  def play
+  def play_full_round
     loop do
-      set_initial_score_and_opponent
-      display_welcome_message
-
-      loop do
-        display_scoreboard
-        players_choose
-        display_moves
-        display_round_winner
-        break if game_over?
-      end
-
-      display_game_winner
-      print_history
-      break unless play_again?
+      display_scoreboard
+      players_choose
+      display_moves
+      display_round_winner
+      break if game_over?
     end
-    display_goodbye_message
   end
-  # rubocop:enable Metrics/MethodLength
 end
 
 RPSGame.new.play
