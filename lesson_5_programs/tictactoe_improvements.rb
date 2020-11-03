@@ -9,11 +9,7 @@ class Board
     reset
   end
   
-  def get_square_at(key)
-    @squares[key]
-  end
-  
-  def set_square_at(key, marker)
+  def []=(key, marker)
     @squares[key].marker = marker
   end
   
@@ -48,15 +44,15 @@ class Board
   def draw
     puts ""
     puts "     |     |"
-    puts "  #{get_square_at(1)}  |  #{get_square_at(2)}  |  #{get_square_at(3)}"
+    puts "  #{@squares[1]}  |  #{@squares[2]}  |  #{@squares[3]}  "
     puts "     |     |"
     puts "-----+-----+-----"
     puts "     |     |"
-    puts "  #{get_square_at(4)}  |  #{get_square_at(5)}  |  #{get_square_at(6)}  "
+    puts "  #{@squares[4]}  |  #{@squares[5]}  |  #{@squares[6]}  "
     puts "     |     |"
     puts "-----+-----+-----"
     puts "     |     |"
-    puts "  #{get_square_at(7)}  |  #{get_square_at(8)}  |  #{get_square_at(9)}  "
+    puts "  #{@squares[7]}  |  #{@squares[8]}  |  #{@squares[9]}  "
     puts "     |     |"
   end
 end
@@ -129,11 +125,11 @@ class TTTGame
       break if board.unmarked_keys.include?(square)
       puts "Sorry, that's not a valid choice."
     end
-    board.set_square_at(square, human.marker)
+    board[square] = human.marker
   end
   
   def computer_moves
-    board.set_square_at(board.unmarked_keys.sample, computer.marker)
+    board[board.unmarked_keys.sample] = computer.marker
   end
   
   def display_result
