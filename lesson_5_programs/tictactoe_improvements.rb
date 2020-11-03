@@ -25,14 +25,14 @@ class Board
     !!winning_marker
   end
   
-  # returns winning marker or nil
   def winning_marker
     WINNING_LINES.each do |line|
-      if line.all? { |key| @squares[key].marker == TTTGame::HUMAN_MARKER }
-        return TTTGame::HUMAN_MARKER
-      elsif line.all? { |key| @squares[key].marker == TTTGame::COMPUTER_MARKER }
-        return TTTGame::COMPUTER_MARKER 
-      end
+      current_markers = []
+      
+      line.each { |key| current_markers << @squares[key].marker }
+
+      next if current_markers.all? ' '
+      return current_markers[0] if current_markers.uniq.size == 1
     end
     nil
   end
