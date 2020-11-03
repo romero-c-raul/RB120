@@ -86,13 +86,15 @@ end
 class TTTGame
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
+  FIRST_TO_MOVE = HUMAN_MARKER
   
-  attr_reader :board, :human, :computer
+  attr_reader :board, :human, :computer, :turn
   
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
     @computer = Player.new(COMPUTER_MARKER)
+    @turn = FIRST_TO_MOVE
   end
   
   def display_welcome_message
@@ -163,12 +165,23 @@ class TTTGame
   
   def reset
     board.reset
+    @turn = FIRST_TO_MOVE
     clear
   end
   
   def display_play_again_message
     puts "Let's play again!"
     puts ''
+  end
+  
+  def current_player_moves
+    if turn == HUMAN_MARKER
+      human_moves
+      @turn = COMPUTER_MARKER
+    elsif turn == COMPUTER_MARKER
+      computer_moves
+      @turn = HUMAN_MARKER
+    end
   end
   
   def play
@@ -179,12 +192,8 @@ class TTTGame
       display_board
       
       loop do
-        human_moves
-        break if board.full? || board.someone_won?
-  
-        computer_moves
-        break if board.full? || board.someone_won?
-  
+        current_player_moves
+        break if board.someone_won? || board.full?
         clear_screen_and_display_board
       end
       display_result
