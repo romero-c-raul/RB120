@@ -120,7 +120,7 @@ class Computer < Player
     super(marker)
     @game_board = game_board
   end
-
+  
   def defensive_ai_select_square
     Board::WINNING_LINES.each do |line|
       current_markers = []
@@ -143,7 +143,7 @@ class Computer < Player
       line.each { |key| current_markers << (game_board.squares[key]).marker }
       next if current_markers.all? ' '
 
-      if current_markers.count(TTTGame::marker) == 2
+      if current_markers.count(marker) == 2
         empty_square_index = current_markers.index(' ')
         return line[empty_square_index] unless empty_square_index.nil?
       end
@@ -269,15 +269,15 @@ class TTTGame
   end
 
   def computer_moves
-    # board[board.unmarked_keys.sample] = computer.marker
-    potential_selection = computer.defensive_ai_select_square
-
-    if potential_selection.nil?
-      puts "First if is running"
-      board[board.unmarked_keys.sample] = computer.marker
+    offensive_tactic = computer.offensive_ai_select_square
+    defensive_tactic = computer.defensive_ai_select_square
+    
+    if offensive_tactic
+      board[offensive_tactic] = computer.marker
+    elsif defensive_tactic
+      board[defensive_tactic] = computer.marker
     else
-      puts "Else is running"
-      board[potential_selection] = computer.marker
+      board[board.unmarked_keys.sample] = computer.marker
     end
   end
 
