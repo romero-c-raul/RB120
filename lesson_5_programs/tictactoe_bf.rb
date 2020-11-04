@@ -19,7 +19,7 @@ class Board
     unmarked_keys.empty?
   end
 
-  def someone_won?
+  def someone_won_round?
     !!winning_marker
   end
 
@@ -79,9 +79,11 @@ end
 
 class Player
   attr_reader :marker
+  attr_accessor :score
 
   def initialize(marker)
     @marker = marker
+    @score = 0
   end
 end
 
@@ -89,6 +91,7 @@ class TTTGame
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
   FIRST_TO_MOVE = HUMAN_MARKER
+  WINNING_ROUNDS = 3
 
   attr_reader :board, :human, :computer, :turn
 
@@ -103,6 +106,7 @@ class TTTGame
     clear
     display_welcome_message
     main_game
+    display_grand_winner
     display_goodbye_message
   end
 
@@ -112,23 +116,47 @@ class TTTGame
     loop do
       display_board
       player_move
-      display_result
-      break unless play_again?
+      display_result_and_update_score
+      press_enter_to_continue
+      break if someone_won_game?
       reset
-      display_play_again_message
+      display_next_round_starting_message
     end
+  end
+
+  def display_grand_winner
+    if human.score >= WINNING_ROUNDS
+      puts "You are the grand winner!"
+    else
+      puts "Computer is the grand winner!"
+    end
+  end
+
+  def display_next_round_starting_message
+    puts "Next round starting..."
+    puts ''
+  end
+
+  def press_enter_to_continue
+    puts "Press enter to continue"
+    gets.chomp
+  end
+
+  def someone_won_game?
+    human.score >= WINNING_ROUNDS || computer.score >= WINNING_ROUNDS
   end
 
   def player_move
     loop do
       current_player_moves
-      break if board.someone_won? || board.full?
+      break if board.someone_won_round? || board.full?
       clear_screen_and_display_board
     end
   end
 
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
+    puts "First player to win #{WINNING_ROUNDS} rounds wins the game!"
     puts ""
   end
 
@@ -138,6 +166,7 @@ class TTTGame
 
   def display_board
     puts "You're an #{human.marker}. Computer is an #{computer.marker}"
+    puts "Player score: #{human.score}; Computer score: #{computer.score}"
     puts ""
     board.draw
     puts ""
@@ -147,7 +176,7 @@ class TTTGame
     clear
     display_board
   end
-  
+
   def human_moves
     puts "Choose a square between (#{joinor(board.unmarked_keys)}): "
     square = nil
@@ -158,10 +187,10 @@ class TTTGame
     end
     board[square] = human.marker
   end
-  
+
   def joinor(array, punctuation=",", conjunction='and')
     squares_available = []
-  
+
     if array.size >= 3
       first_to_second_last_numbers = array[0..-2].join("#{punctuation} ")
       last_number = array[-1]
@@ -178,14 +207,16 @@ class TTTGame
     board[board.unmarked_keys.sample] = computer.marker
   end
 
-  def display_result
+  def display_result_and_update_score
     clear_screen_and_display_board
 
     case board.winning_marker
     when human.marker
-      puts "You won!"
+      human.score += 1
+      puts "You won this round!!"
     when computer.marker
-      puts "Computer won!"
+      computer.score += 1
+      puts "Computer won this round!!"
     else
       puts "It's a tie!"
     end
