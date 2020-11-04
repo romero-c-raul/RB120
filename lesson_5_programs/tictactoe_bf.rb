@@ -16,6 +16,10 @@ class Board
     @squares[key].marker = marker
   end
 
+  def [](key)
+    @squares[key].marker
+  end
+
   def unmarked_keys
     @squares.keys.select { |key| @squares[key].unmarked? }
   end
@@ -115,12 +119,14 @@ end
 
 class Computer < Player
   attr_reader :game_board
+  attr_accessor :turn
 
   def initialize(marker, game_board)
     super(marker)
     @game_board = game_board
+    @turn = 0
   end
-  
+
   def defensive_ai_select_square
     Board::WINNING_LINES.each do |line|
       current_markers = []
@@ -149,6 +155,10 @@ class Computer < Player
       end
     end
     nil
+  end
+
+  def turn_reset
+    self.turn = 0
   end
 end
 
@@ -269,9 +279,19 @@ class TTTGame
   end
 
   def computer_moves
+    if computer.turn == 2 && board[5] == ' ' && FIRST_TO_MOVE == HUMAN_MARKER
+      board[5] = computer.marker
+      return
+    end
+
+    launch_computer_ai
+    computer.turn += 1
+  end
+
+  def launch_computer_ai
     offensive_tactic = computer.offensive_ai_select_square
     defensive_tactic = computer.defensive_ai_select_square
-    
+
     if offensive_tactic
       board[offensive_tactic] = computer.marker
     elsif defensive_tactic
@@ -280,6 +300,8 @@ class TTTGame
       board[board.unmarked_keys.sample] = computer.marker
     end
   end
+
+  def computer_marks_middle_square?; end
 
   def display_result_and_update_score
     clear_screen_and_display_board
@@ -315,6 +337,7 @@ class TTTGame
   def reset
     board.reset
     @turn = FIRST_TO_MOVE
+    computer.turn_reset
     clear
   end
 
