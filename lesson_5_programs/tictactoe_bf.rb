@@ -1,7 +1,12 @@
+require 'pry'
+
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # columns
                   [[1, 5, 9], [3, 5, 7]]              # diagonals
+
+  attr_accessor :squares
+
   def initialize
     @squares = {}
     reset
@@ -87,6 +92,66 @@ class Player
   end
 end
 
+=begin
+- Write a program that determines whether the computer acts offensively or
+  defensively
+  - Offensively: If there are two computer markers in a winning line,
+    apply marker to the empty line (' ') to win.
+  - Defensively: If there are two human markers in a winning line, apply
+    marker to empty line (' ') to prevent losing.
+
+- Board#winning_marker already obtains a collection of all the markers
+  within a winning line
+  - We can modify method by looking at the markers in the winning line
+    - We first look at the lines with computer markers
+      - If the winning line array has two computer markers, add a computer
+        marker to the empty index
+    - If none of the lines have two computer markers, then look at the lines
+      with human markers
+      - If the winning line has two human markers, add a computer marker to
+        the empty index
+
+=end
+
+class Computer < Player
+  attr_reader :game_board
+
+  def initialize(marker, game_board)
+    super(marker)
+    @game_board = game_board
+  end
+
+  def defensive_ai_select_square
+    Board::WINNING_LINES.each do |line|
+      current_markers = []
+
+      line.each { |key| current_markers << (game_board.squares[key]).marker }
+      next if current_markers.all? ' '
+
+      if current_markers.count(TTTGame::HUMAN_MARKER) == 2
+        empty_square_index = current_markers.index(' ')
+        return line[empty_square_index] unless empty_square_index.nil?
+      end
+    end
+    nil
+  end
+
+  def offensive_ai_select_square
+    Board::WINNING_LINES.each do |line|
+      current_markers = []
+
+      line.each { |key| current_markers << (game_board.squares[key]).marker }
+      next if current_markers.all? ' '
+
+      if current_markers.count(TTTGame::marker) == 2
+        empty_square_index = current_markers.index(' ')
+        return line[empty_square_index] unless empty_square_index.nil?
+      end
+    end
+    nil
+  end
+end
+
 class TTTGame
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
@@ -98,7 +163,7 @@ class TTTGame
   def initialize
     @board = Board.new
     @human = Player.new(HUMAN_MARKER)
-    @computer = Player.new(COMPUTER_MARKER)
+    @computer = Computer.new(COMPUTER_MARKER, @board)
     @turn = FIRST_TO_MOVE
   end
 
@@ -204,7 +269,16 @@ class TTTGame
   end
 
   def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
+    # board[board.unmarked_keys.sample] = computer.marker
+    potential_selection = computer.defensive_ai_select_square
+
+    if potential_selection.nil?
+      puts "First if is running"
+      board[board.unmarked_keys.sample] = computer.marker
+    else
+      puts "Else is running"
+      board[potential_selection] = computer.marker
+    end
   end
 
   def display_result_and_update_score
