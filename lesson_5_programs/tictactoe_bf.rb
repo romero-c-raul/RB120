@@ -47,9 +47,6 @@ class Board
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
-
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def draw
     puts ""
     puts "     |     |"
@@ -87,12 +84,13 @@ class Square
 end
 
 class Player
-  attr_reader :marker
-  attr_accessor :score
+  attr_reader :marker 
+  attr_accessor :score, :name
 
   def initialize(marker)
     @marker = marker
     @score = 0
+    @name = "Player"
   end
 end
 
@@ -104,6 +102,7 @@ class Computer < Player
     super(marker)
     @game_board = game_board
     @turn = 0
+    @name = ['R2D2', 'Hal', 'Chappie', 'Sonny', 'Number 5'].sample
   end
 
   def defensive_ai_select_square
@@ -157,6 +156,7 @@ class TTTGame
   end
 
   def play
+    set_human_name
     clear
     display_welcome_message
     player_picks_marker?
@@ -229,9 +229,9 @@ class TTTGame
 
   def display_grand_winner
     if human.score >= WINNING_ROUNDS
-      puts "You are the grand winner!"
+      puts "You are the grand winner, congrats #{human.name}!"
     else
-      puts "Computer is the grand winner!"
+      puts "#{computer.name} is the grand winner, better luck next time!"
     end
   end
 
@@ -258,8 +258,9 @@ class TTTGame
   end
 
   def display_welcome_message
-    puts "Welcome to Tic Tac Toe!"
+    puts "Hello #{human.name}, welcome to Tic Tac Toe!"
     puts "First player to win #{WINNING_ROUNDS} rounds wins the game!"
+    puts "Your opponent today is #{computer.name}."
     puts ""
   end
 
@@ -381,6 +382,18 @@ class TTTGame
       @turn = HUMAN_MARKER
     end
   end
+  
+  def set_human_name
+    system 'clear'
+    n = nil
+    loop do
+      puts "What is your name?"
+      n = gets.chomp
+      break unless n.empty?
+      puts "Sorry, must enter a value"
+    end
+    human.name = n
+  end
 end
 
 game = TTTGame.new
@@ -406,7 +419,7 @@ game.play
       - If the winning line has two human markers, add a computer marker to
         the empty index
 
-- Allow player to pick any marker
+2.- Allow player to pick any marker
   - Write a method that asks if the player would like to pick the marker
     or stay with the default one
 
@@ -422,4 +435,10 @@ game.play
     - Capture answer
     - Break out of loop if answer is 1 char long
     - Use replace method to change constant
+    
+3.- Set a name for the player and computer
+  - name will be a state of player and computer object instances
+  - Computer name will come from an array of names, and a random one
+    will be selected when object is instantiated
+  - Player name will be asked before game starts
 =end
