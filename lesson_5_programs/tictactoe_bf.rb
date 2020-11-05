@@ -96,27 +96,6 @@ class Player
   end
 end
 
-=begin
-- Write a program that determines whether the computer acts offensively or
-  defensively
-  - Offensively: If there are two computer markers in a winning line,
-    apply marker to the empty line (' ') to win.
-  - Defensively: If there are two human markers in a winning line, apply
-    marker to empty line (' ') to prevent losing.
-
-- Board#winning_marker already obtains a collection of all the markers
-  within a winning line
-  - We can modify method by looking at the markers in the winning line
-    - We first look at the lines with computer markers
-      - If the winning line array has two computer markers, add a computer
-        marker to the empty index
-    - If none of the lines have two computer markers, then look at the lines
-      with human markers
-      - If the winning line has two human markers, add a computer marker to
-        the empty index
-
-=end
-
 class Computer < Player
   attr_reader :game_board
   attr_accessor :turn
@@ -180,6 +159,7 @@ class TTTGame
   def play
     clear
     display_welcome_message
+    choose_who_goes_first? if FIRST_TO_MOVE == 'choose'
     main_game
     display_grand_winner
     display_goodbye_message
@@ -196,6 +176,26 @@ class TTTGame
       break if someone_won_game?
       reset
       display_next_round_starting_message
+    end
+  end
+
+  def choose_who_goes_first?
+    answer = nil
+    loop do
+      puts "Would you like to go first?"
+      answer = gets.chomp.downcase
+      break if %w(y n yes no).include? answer
+      puts "That is not a valid option, please try again."
+    end
+
+    replace_first_to_move(answer)
+  end
+
+  def replace_first_to_move(answer)
+    if answer == 'y' || answer == 'yes'
+      FIRST_TO_MOVE.replace(HUMAN_MARKER)
+    else
+      FIRST_TO_MOVE.replace(COMPUTER_MARKER)
     end
   end
 
@@ -265,11 +265,9 @@ class TTTGame
 
   def joinor(array, punctuation=",", conjunction='and')
     squares_available = []
-
     if array.size >= 3
       first_to_second_last_numbers = array[0..-2].join("#{punctuation} ")
-      last_number = array[-1]
-      squares_available << [first_to_second_last_numbers] << last_number
+      squares_available << [first_to_second_last_numbers] << array[-1]
       squares_available.join("#{punctuation} #{conjunction} ")
     elsif array.size == 2
       array.join(" #{conjunction} ")
@@ -359,3 +357,25 @@ end
 
 game = TTTGame.new
 game.play
+
+=begin
+- Notes
+- Write a program that determines whether the computer acts offensively or
+  defensively
+  - Offensively: If there are two computer markers in a winning line,
+    apply marker to the empty line (' ') to win.
+  - Defensively: If there are two human markers in a winning line, apply
+    marker to empty line (' ') to prevent losing.
+
+- Board#winning_marker already obtains a collection of all the markers
+  within a winning line
+  - We can modify method by looking at the markers in the winning line
+    - We first look at the lines with computer markers
+      - If the winning line array has two computer markers, add a computer
+        marker to the empty index
+    - If none of the lines have two computer markers, then look at the lines
+      with human markers
+      - If the winning line has two human markers, add a computer marker to
+        the empty index
+
+=end
