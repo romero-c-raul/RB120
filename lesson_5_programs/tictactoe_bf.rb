@@ -47,6 +47,9 @@ class Board
   def reset
     (1..9).each { |key| @squares[key] = Square.new }
   end
+
+  # rubocop:disable Metrics/AbcSize
+  # rubocop:disable Metrics/MethodLength
   def draw
     puts ""
     puts "     |     |"
@@ -84,7 +87,7 @@ class Square
 end
 
 class Player
-  attr_reader :marker 
+  attr_reader :marker
   attr_accessor :score, :name
 
   def initialize(marker)
@@ -335,13 +338,22 @@ class TTTGame
 
     case board.winning_marker
     when human.marker
-      human.score += 1
       puts "You won this round!!"
     when computer.marker
-      computer.score += 1
       puts "Computer won this round!!"
     else
       puts "It's a tie!"
+    end
+
+    update_score
+  end
+
+  def update_score
+    case board.winning_marker
+    when human.marker
+      human.score += 1
+    when computer.marker
+      computer.score += 1
     end
   end
 
@@ -382,7 +394,7 @@ class TTTGame
       @turn = HUMAN_MARKER
     end
   end
-  
+
   def set_human_name
     system 'clear'
     n = nil
@@ -435,7 +447,7 @@ game.play
     - Capture answer
     - Break out of loop if answer is 1 char long
     - Use replace method to change constant
-    
+
 3.- Set a name for the player and computer
   - name will be a state of player and computer object instances
   - Computer name will come from an array of names, and a random one
