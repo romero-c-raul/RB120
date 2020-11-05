@@ -144,7 +144,7 @@ end
 class TTTGame
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
-  FIRST_TO_MOVE = HUMAN_MARKER
+  FIRST_TO_MOVE = 'choose'
   WINNING_ROUNDS = 3
 
   attr_reader :board, :human, :computer, :turn
@@ -159,6 +159,7 @@ class TTTGame
   def play
     clear
     display_welcome_message
+    player_picks_marker?
     choose_who_goes_first? if FIRST_TO_MOVE == 'choose'
     main_game
     display_grand_winner
@@ -179,16 +180,43 @@ class TTTGame
     end
   end
 
+  def player_picks_marker?
+    answer = nil
+    loop do
+      puts "Would you like to use the default marker? (y/n)"
+      answer = gets.chomp.downcase
+      break if %w(y yes n no).include? answer
+      puts "Invalid answer, please try again"
+    end
+
+    change_player_marker if answer.start_with?('n')
+    puts ''
+  end
+
+  def change_player_marker
+    answer = nil
+    loop do
+      puts "Please input desired marker (only 1 character long)"
+      answer = gets.chomp
+      break if answer.size == 1
+      puts "Invalid input, please try again."
+    end
+
+    HUMAN_MARKER.replace(answer)
+    puts ""
+  end
+
   def choose_who_goes_first?
     answer = nil
     loop do
-      puts "Would you like to go first?"
+      puts "Would you like to go first? (y/n)"
       answer = gets.chomp.downcase
       break if %w(y n yes no).include? answer
       puts "That is not a valid option, please try again."
     end
 
     replace_first_to_move(answer)
+    puts ""
   end
 
   def replace_first_to_move(answer)
@@ -240,7 +268,7 @@ class TTTGame
   end
 
   def display_board
-    puts "You're an #{human.marker}. Computer is an #{computer.marker}"
+    puts "You're a(n) #{human.marker}. Computer is a(n) #{computer.marker}"
     puts "Player score: #{human.score}; Computer score: #{computer.score}"
     puts ""
     board.draw
@@ -378,4 +406,20 @@ game.play
       - If the winning line has two human markers, add a computer marker to
         the empty index
 
+- Allow player to pick any marker
+  - Write a method that asks if the player would like to pick the marker
+    or stay with the default one
+
+  ALGORITHM (Main method) (player_picks_marker?)
+  - Ask player "Would you like to use the default marker (y/n)"
+    - If the player answers yes:
+      - Constant "HUMAN_MARKER" stays the same ("X")
+    - If the player answers no:
+      - call method TTTGame#change_player_marker
+
+  ALGORITHM (Helper method - change_player_marker)
+  - Ask player "Input desired marker (only one character long)"
+    - Capture answer
+    - Break out of loop if answer is 1 char long
+    - Use replace method to change constant
 =end
