@@ -145,7 +145,7 @@ class TTTGame
   HUMAN_MARKER = 'X'
   COMPUTER_MARKER = 'O'
   FIRST_TO_MOVE = 'choose'
-  WINNING_ROUNDS = 3
+  WINNING_ROUNDS = 1
 
   attr_reader :board, :human, :computer, :turn
 
@@ -157,14 +157,9 @@ class TTTGame
   end
 
   def play
-    set_human_name
-    clear
-    display_welcome_message
-    player_picks_marker?
-    choose_who_goes_first? if FIRST_TO_MOVE == 'choose'
+    setup
     main_game
-    display_grand_winner
-    display_goodbye_message
+    end_game
   end
 
   private
@@ -177,14 +172,27 @@ class TTTGame
       press_enter_to_continue
       break if someone_won_game?
       reset
-      display_next_round_starting_message
     end
+  end
+
+  def setup
+    set_human_name
+    clear
+    display_welcome_message
+    player_picks_marker?
+    choose_who_goes_first? if FIRST_TO_MOVE == 'choose'
+    clear
+  end
+
+  def end_game
+    display_grand_winner_and_final_score
+    display_goodbye_message
   end
 
   def player_picks_marker?
     answer = nil
     loop do
-      puts "Would you like to use the default marker? (y/n)"
+      puts "The default marker is X. Would you like to use the default marker?"
       answer = gets.chomp.downcase
       break if %w(y yes n no).include? answer
       puts "Invalid answer, please try again"
@@ -228,17 +236,16 @@ class TTTGame
     end
   end
 
-  def display_grand_winner
+  def display_grand_winner_and_final_score
+    puts "***Final Score***".center(34)
+    display_current_score
+    puts ''
+
     if human.score >= WINNING_ROUNDS
       puts "You are the grand winner, congrats #{human.name}!"
     else
       puts "#{computer.name} is the grand winner, better luck next time!"
     end
-  end
-
-  def display_next_round_starting_message
-    puts "Next round starting..."
-    puts ''
   end
 
   def press_enter_to_continue
@@ -271,10 +278,14 @@ class TTTGame
 
   def display_board
     puts "You're a(n) #{human.marker}. Computer is a(n) #{computer.marker}"
-    puts "Player score: #{human.score}; Computer score: #{computer.score}"
+    display_current_score
     puts ""
     board.draw
     puts ""
+  end
+
+  def display_current_score
+    puts "Player score: #{human.score}; Computer score: #{computer.score}"
   end
 
   def clear_screen_and_display_board
@@ -408,47 +419,3 @@ end
 
 game = TTTGame.new
 game.play
-
-=begin
-- Notes
-- Write a program that determines whether the computer acts offensively or
-  defensively
-  - Offensively: If there are two computer markers in a winning line,
-    apply marker to the empty line (' ') to win.
-  - Defensively: If there are two human markers in a winning line, apply
-    marker to empty line (' ') to prevent losing.
-
-- Board#winning_marker already obtains a collection of all the markers
-  within a winning line
-  - We can modify method by looking at the markers in the winning line
-    - We first look at the lines with computer markers
-      - If the winning line array has two computer markers, add a computer
-        marker to the empty index
-    - If none of the lines have two computer markers, then look at the lines
-      with human markers
-      - If the winning line has two human markers, add a computer marker to
-        the empty index
-
-2.- Allow player to pick any marker
-  - Write a method that asks if the player would like to pick the marker
-    or stay with the default one
-
-  ALGORITHM (Main method) (player_picks_marker?)
-  - Ask player "Would you like to use the default marker (y/n)"
-    - If the player answers yes:
-      - Constant "HUMAN_MARKER" stays the same ("X")
-    - If the player answers no:
-      - call method TTTGame#change_player_marker
-
-  ALGORITHM (Helper method - change_player_marker)
-  - Ask player "Input desired marker (only one character long)"
-    - Capture answer
-    - Break out of loop if answer is 1 char long
-    - Use replace method to change constant
-
-3.- Set a name for the player and computer
-  - name will be a state of player and computer object instances
-  - Computer name will come from an array of names, and a random one
-    will be selected when object is instantiated
-  - Player name will be asked before game starts
-=end
