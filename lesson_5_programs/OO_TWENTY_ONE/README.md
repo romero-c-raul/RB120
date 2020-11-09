@@ -42,7 +42,9 @@ Here is an overview of the game:
   then the highest total wins.
 - If both totals are equal, then it's a tie, and nobody wins.
 
-Potential Classes:
+************************
+***Potential Classes:***
+************************
 Player
 - hit
 - stay
@@ -60,3 +62,14 @@ Deck
 Card
 Game
 - start
+- 
+********************
+****After Spike:****
+********************
+- Extract redundant behaviors from Player and Dealer into Participant
+- Determine "hand" structure
+  - Empty array?
+- Determine Structure to be used in deck
+  - Possibly a hash
+- Determine states within "card" class
+  - Suit and value only?
