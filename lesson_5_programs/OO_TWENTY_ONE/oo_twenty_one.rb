@@ -1,13 +1,18 @@
 class Participant
-  attr_accessor :name, :hand, :score
+  attr_accessor :name, :hand, :score, :wins
 
   def initialize(name)
     @name = name
     @hand = []
+    @wins = 0
   end
 
   def current_hand
     hand.map(&:value)
+  end
+
+  def reset_hand
+    self.hand = []
   end
 
   def hit; end
@@ -117,6 +122,8 @@ class Card
 end
 
 class Game
+  WINNING_ROUNDS = 3
+
   attr_accessor :player, :dealer, :deck
 
   def initialize
@@ -126,30 +133,62 @@ class Game
   end
 
   def start
-    # Game Intro
+    game_intro
+    # Main Game
+    loop do
+      shuffle_deck
+      deal_first_cards
+      show_rounds_won
+      show_initial_cards
+      player_turn
+      dealer_turn unless player.busted?
+      show_round_result_and_update_wins
+      break if someone_won_game?
+      next_round_starting
+      reset
+    end
+    puts "Game is over!"
+  end
+
+  def show_rounds_won
+    puts "**Rounds Won: Player: #{player.wins}; Dealer: #{dealer.wins}**"
+    puts ""
+  end
+
+  def reset
+    player.reset_hand
+    dealer.reset_hand
+    self.deck = Deck.new
+  end
+
+  def next_round_starting
+    prompt "Next round is starting..."
+    press_enter_to_continue
+    clear
+  end
+
+  def someone_won_game?
+    player.wins >= WINNING_ROUNDS || dealer.wins >= WINNING_ROUNDS
+  end
+
+  def game_intro
     clear
     display_welcome_message
     display_instructions
     press_enter_to_continue
-    # Main Game
-    shuffle_deck
-    deal_first_cards
-    show_initial_cards
-    player_turn
-    dealer_turn unless player.busted?
-    show_result
+    clear
   end
 
   def dealer_turn
     puts ""
-    prompt "Dealer's turn!"
+    prompt "Dealer's turn..."
     loop do
       break if dealer.stays?
       prompt dealer.hits
       deck.deal_card(dealer.hand)
       break if dealer.busted?
       display_dealer_hand_and_score
-      gets.chomp
+      press_enter_to_continue
     end
 
     prompt "Dealer stays!" unless dealer.busted?
@@ -167,8 +206,8 @@ class Game
 
   def display_instructions
     prompt "Try to get as close to 21 as possible!"
-    prompt "But if you go over 21, you lose immediately. Be careful!"
-    # prompt "First to win #{WINNING_ROUNDS} rounds wins the game."
+    prompt "But if you go over 21, you lose the round immediately. Be careful!"
+    prompt "First to win #{WINNING_ROUNDS} rounds wins the game."
     # puts "(top score limit can be changed in source code)"
     puts ""
   end
@@ -187,9 +226,8 @@ class Game
   end
 
   def press_enter_to_continue
-    puts "Dealing cards... Press enter to continue"
+    prompt "Press enter to continue"
     gets.chomp
-    system 'clear'
   end
 
   def prompt(msg)
@@ -243,31 +281,55 @@ class Game
     end
   end
 
-  def show_result
+  def show_round_result_and_update_wins
     display_participant_busted? if someone_busted?
-    display_grand_winner unless someone_busted?
+    display_round_winner unless someone_busted?
+    update_overall_wins
     puts ""
-    display_final_score
+    display_final_round_score
   end
 
   def display_participant_busted?
     puts ""
-    prompt "Busted! You Lost!" if player.busted?
-    prompt "Dealer busted! You win the game!" if dealer.busted?
+    prompt "Busted! You lost this round!" if player.busted?
+    prompt "Dealer busted! You win this round!" if dealer.busted?
   end
 
-  def display_final_score
-    puts " Final Score ".center(45, '*')
+  def display_final_round_score
+    puts " Round Score ".center(45, '*')
     puts "Player's hand: [#{joinor(player.current_hand)}]; Total score: #{player.hand_value}"
     puts "Dealers's hand: [#{joinor(dealer.current_hand)}]; Total score: #{dealer.hand_value}"
     puts ""
   end
-  
-  def display_grand_winner
+
+  def display_round_winner
     if player.hand_value > dealer.hand_value
-      puts "You won!"
+      prompt "You won this round!"
+    elsif dealer.hand_value > player.hand_value
+      prompt "Dealer won this round!"
     else
-      puts "Dealer won. Better luck next time!"
+      prompt "It's a tie!"
+    end
+  end
+
+  def update_overall_wins
+    update_wins_by_busted
+    update_wins_by_hand_value unless someone_busted?
+  end
+
+  def update_wins_by_busted
+    if dealer.busted?
+      player.wins += 1
+    elsif player.busted?
+      dealer.wins += 1
+    end
+  end
+
+  def update_wins_by_hand_value
+    if player.hand_value > dealer.hand_value
+      player.wins += 1
+    elsif dealer.hand_value > player.hand_value
+      dealer.wins += 1
     end
   end
 
@@ -277,8 +339,3 @@ class Game
 end
 
 Game.new.start
-# puts Deck.new.cards
-# puts new_game.deck.cards.size
-# new_game = Game.new.start
-# new_game.deal_first_cards
-# new_game.show_initial_cards
