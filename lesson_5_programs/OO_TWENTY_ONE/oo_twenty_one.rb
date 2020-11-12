@@ -56,6 +56,8 @@ class Player < Participant
 end
 
 class Dealer < Participant
+  DEALER_LIMIT = 17
+  
   def initialize
     super('Dealer')
   end
@@ -65,11 +67,11 @@ class Dealer < Participant
   end
 
   def stays?
-    hand_value >= 17
+    hand_value >= DEALER_LIMIT
   end
 
   def hits
-    "Dealer hits!" if hand_value < 17
+    "Dealer hits!" if hand_value < DEALER_LIMIT
   end
 end
 
@@ -134,7 +136,17 @@ class Game
 
   def start
     game_intro
-    # Main Game
+    main_game
+    # display_grand_winner
+    # play_again?
+  end
+
+  def show_rounds_won
+    puts "**Rounds Won: Player: #{player.wins}; Dealer: #{dealer.wins}**"
+    puts ""
+  end
+  
+  def main_game
     loop do
       shuffle_deck
       deal_first_cards
@@ -147,12 +159,35 @@ class Game
       next_round_starting
       reset
     end
-    puts "Game is over!"
+    display_final_winner_and_game_score
   end
-
-  def show_rounds_won
-    puts "**Rounds Won: Player: #{player.wins}; Dealer: #{dealer.wins}**"
+  
+  def display_final_winner
+    game_winner = who_won_game?
+    
+    case game_winner
+    when 'Player'
+      puts "You are the grand winner! Congratulations!"
+    when 'Dealer'
+      puts "You lost the game! Better luck next time."
+    end
+    
     puts ""
+  end
+  
+  def display_final_game_score
+    puts " Final Game Score ".center(45, '*')
+    puts "Player wins: #{player.wins}; Dealer wins: #{dealer.wins}".center(45)
+    puts "*" * 45
+  end
+  
+  def display_final_winner_and_game_score
+    display_final_winner
+    display_final_game_score
+  end
+  
+  def who_won_game?
+    player.wins > dealer.wins ? 'Player' : 'Dealer'
   end
 
   def reset
@@ -192,7 +227,7 @@ class Game
     end
 
     prompt "Dealer stays!" unless dealer.busted?
-    display_dealer_hand_and_score
+    display_dealer_hand_and_score unless dealer.stays?
   end
 
   def clear
@@ -206,7 +241,7 @@ class Game
 
   def display_instructions
     prompt "Try to get as close to 21 as possible!"
-    prompt "But if you go over 21, you lose the round immediately. Be careful!"
+    prompt "But if you go over #{WINNING_ROUNDS}, you lose the round immediately. Be careful!"
     prompt "First to win #{WINNING_ROUNDS} rounds wins the game."
     # puts "(top score limit can be changed in source code)"
     puts ""
@@ -283,10 +318,14 @@ class Game
 
   def show_round_result_and_update_wins
     display_participant_busted? if someone_busted?
-    display_round_winner unless someone_busted?
-    update_overall_wins
     puts ""
+    update_overall_wins
     display_final_round_score
+    puts ""
+    display_round_winner unless someone_busted?
+    puts ""
+    puts ("*" * 45)
+    puts ""
   end
 
   def display_participant_busted?
@@ -297,6 +336,7 @@ class Game
 
   def display_final_round_score
     puts " Round Score ".center(45, '*')
+    puts ""
     puts "Player's hand: [#{joinor(player.current_hand)}]; Total score: #{player.hand_value}"
     puts "Dealers's hand: [#{joinor(dealer.current_hand)}]; Total score: #{dealer.hand_value}"
     puts ""
@@ -304,11 +344,11 @@ class Game
 
   def display_round_winner
     if player.hand_value > dealer.hand_value
-      prompt "You won this round!"
+      puts "You won this round!".center(45)
     elsif dealer.hand_value > player.hand_value
-      prompt "Dealer won this round!"
+      puts "You lost this round!".center(45)
     else
-      prompt "It's a tie!"
+      puts "It's a tie!".center(45)
     end
   end
 
