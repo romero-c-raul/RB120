@@ -19,10 +19,6 @@ class Participant
     self.wins = 0
   end
 
-  def hit; end
-
-  def stay; end
-
   def busted?
     hand_value > 21
   end
@@ -33,22 +29,28 @@ class Participant
 
   def numerical_card_values
     current_score = []
+    determine_card_values(current_score)
+    current_score
+  end
 
+  def determine_card_values(current_score)
     card_values.each do |current_value|
       if (2..10).include?(current_value)
         current_score << current_value
       elsif ['J', 'Q', 'K'].include?(current_value)
         current_score << 10
       elsif ['A'].include?(current_value)
-        current_score << if (current_score.sum + 11) > 21
-                           1
-                         else
-                           11
-                         end
+        current_score << ace_score(current_score)
       end
     end
+  end
 
-    current_score
+  def ace_score(current_score)
+    if (current_score.sum + 11) > 21
+      1
+    else
+      11
+    end
   end
 
   def card_values
@@ -129,6 +131,7 @@ end
 
 class Game
   WINNING_ROUNDS = 3
+  MAX_HAND_VALUE_LIMIT = 21
 
   attr_accessor :player, :dealer, :deck
 
@@ -159,7 +162,8 @@ class Game
   end
 
   def goodbye_message
-    puts "Thanks for playing Twenty-One!"
+    puts ""
+    puts "Thanks for playing Twenty-One! Goodbye!"
   end
 
   def play_current_game
@@ -294,8 +298,9 @@ class Game
   end
 
   def display_instructions
-    prompt "Try to get as close to #{WINNING_ROUNDS} as possible!"
-    prompt "But if you go over #{WINNING_ROUNDS}, you lose the round immediately. Be careful!"
+    prompt "Try to get as close to 21 as possible!"
+    prompt "But if you go over 21, you lose the round " \
+           "immediately. Be careful!"
     prompt "First to win #{WINNING_ROUNDS} rounds wins the game."
     puts ""
   end
@@ -306,11 +311,13 @@ class Game
   end
 
   def display_player_hand_and_score
-    prompt "You have: #{joinor(player.current_hand)} (total of #{player.hand_value})"
+    prompt "You have: #{joinor(player.current_hand)}" \
+           " (total of #{player.hand_value})"
   end
 
   def display_dealer_hand_and_score
-    prompt "Dealer has: #{joinor(dealer.current_hand)} (total of #{dealer.hand_value})"
+    prompt "Dealer has: #{joinor(dealer.current_hand)}" \
+           " (total of #{dealer.hand_value})"
   end
 
   def press_enter_to_continue
@@ -388,8 +395,10 @@ class Game
   def display_final_round_score
     puts " Round Score ".center(45, '-')
     puts ""
-    puts "Player's hand: [#{joinor(player.current_hand)}]; Total score: #{player.hand_value}"
-    puts "Dealers's hand: [#{joinor(dealer.current_hand)}]; Total score: #{dealer.hand_value}"
+    puts "Player's hand: [#{joinor(player.current_hand)}];" \
+         " Total score: #{player.hand_value}"
+    puts "Dealers's hand: [#{joinor(dealer.current_hand)}];" \
+         " Total score: #{dealer.hand_value}"
     puts ""
   end
 
