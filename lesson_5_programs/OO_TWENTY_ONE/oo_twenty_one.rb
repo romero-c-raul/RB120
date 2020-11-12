@@ -20,7 +20,7 @@ class Participant
   end
 
   def busted?
-    hand_value > 21
+    hand_value > Game::MAX_HAND_VALUE_LIMIT
   end
 
   def hand_value
@@ -46,7 +46,7 @@ class Participant
   end
 
   def ace_score(current_score)
-    if (current_score.sum + 11) > 21
+    if (current_score.sum + 11) > Game::MAX_HAND_VALUE_LIMIT
       1
     else
       11
@@ -298,8 +298,8 @@ class Game
   end
 
   def display_instructions
-    prompt "Try to get as close to 21 as possible!"
-    prompt "But if you go over 21, you lose the round " \
+    prompt "Try to get as close to #{MAX_HAND_VALUE_LIMIT} as possible!"
+    prompt "But if you go over #{MAX_HAND_VALUE_LIMIT}, you lose the round " \
            "immediately. Be careful!"
     prompt "First to win #{WINNING_ROUNDS} rounds wins the game."
     puts ""
