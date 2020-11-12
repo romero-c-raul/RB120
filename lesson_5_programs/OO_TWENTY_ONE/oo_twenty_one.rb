@@ -14,6 +14,10 @@ class Participant
   def reset_hand
     self.hand = []
   end
+  
+  def reset_wins
+    self.wins = 0
+  end
 
   def hit; end
 
@@ -137,8 +141,7 @@ class Game
   def start
     game_intro
     main_game
-    # display_grand_winner
-    # play_again?
+    puts "Thanks for playing Twenty-One!"
   end
 
   def show_rounds_won
@@ -148,22 +151,49 @@ class Game
   
   def main_game
     loop do
-      shuffle_deck
-      deal_first_cards
-      show_rounds_won
-      show_initial_cards
-      player_turn
-      dealer_turn unless player.busted?
-      show_round_result_and_update_wins
-      break if someone_won_game?
-      next_round_starting
-      reset
+      loop do
+        shuffle_deck
+        deal_first_cards
+        show_rounds_won
+        show_initial_cards
+        #round_setup
+        player_turn
+        dealer_turn unless player.busted?
+        show_round_result_and_update_wins
+        break if someone_won_game?
+        next_round_starting
+        reset
+      end
+      display_final_winner_and_game_score
+      break unless play_again?
+      reset_game
+      clear
     end
-    display_final_winner_and_game_score
+  end
+  
+  def round_setup
+    shuffle_deck
+    deal_first_cards
+    show_rounds_won
+    show_initial_cards
+  end
+  
+  def play_again?
+    puts ""
+    answer = nil
+    loop do
+      puts "Would you like to play again? (y/n)"
+      answer = gets.chomp.downcase
+      break if %w(y n yes no).include? answer
+      puts "Sorry, must be y or n"
+    end
+
+    answer.start_with? 'y'
   end
   
   def display_final_winner
     game_winner = who_won_game?
+    puts ""
     
     case game_winner
     when 'Player'
@@ -171,7 +201,6 @@ class Game
     when 'Dealer'
       puts "You lost the game! Better luck next time."
     end
-    
     puts ""
   end
   
@@ -182,8 +211,8 @@ class Game
   end
   
   def display_final_winner_and_game_score
-    display_final_winner
     display_final_game_score
+    display_final_winner
   end
   
   def who_won_game?
@@ -195,7 +224,13 @@ class Game
     dealer.reset_hand
     self.deck = Deck.new
   end
-
+  
+  def reset_game
+    reset
+    player.reset_wins
+    dealer.reset_wins
+  end
+  
   def next_round_starting
     prompt "Next round is starting..."
     press_enter_to_continue
@@ -324,8 +359,6 @@ class Game
     puts ""
     display_round_winner unless someone_busted?
     puts ""
-    puts ("*" * 45)
-    puts ""
   end
 
   def display_participant_busted?
@@ -335,7 +368,7 @@ class Game
   end
 
   def display_final_round_score
-    puts " Round Score ".center(45, '*')
+    puts " Round Score ".center(45, '-')
     puts ""
     puts "Player's hand: [#{joinor(player.current_hand)}]; Total score: #{player.hand_value}"
     puts "Dealers's hand: [#{joinor(dealer.current_hand)}]; Total score: #{dealer.hand_value}"
