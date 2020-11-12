@@ -14,7 +14,7 @@ class Participant
   def reset_hand
     self.hand = []
   end
-  
+
   def reset_wins
     self.wins = 0
   end
@@ -61,7 +61,7 @@ end
 
 class Dealer < Participant
   DEALER_LIMIT = 17
-  
+
   def initialize
     super('Dealer')
   end
@@ -141,43 +141,59 @@ class Game
   def start
     game_intro
     main_game
-    puts "Thanks for playing Twenty-One!"
+    goodbye_message
   end
 
   def show_rounds_won
     puts "**Rounds Won: Player: #{player.wins}; Dealer: #{dealer.wins}**"
     puts ""
   end
-  
+
   def main_game
     loop do
-      loop do
-        shuffle_deck
-        deal_first_cards
-        show_rounds_won
-        show_initial_cards
-        #round_setup
-        player_turn
-        dealer_turn unless player.busted?
-        show_round_result_and_update_wins
-        break if someone_won_game?
-        next_round_starting
-        reset
-      end
+      play_current_game
       display_final_winner_and_game_score
       break unless play_again?
-      reset_game
-      clear
+      prepare_next_game
     end
   end
-  
+
+  def goodbye_message
+    puts "Thanks for playing Twenty-One!"
+  end
+
+  def play_current_game
+    loop do
+      round_setup
+      participants_play
+      break if someone_won_game?
+      prepare_next_round
+    end
+  end
+
+  def prepare_next_game
+    reset_game
+    clear
+  end
+
   def round_setup
     shuffle_deck
     deal_first_cards
     show_rounds_won
     show_initial_cards
   end
-  
+
+  def prepare_next_round
+    next_round_starting
+    reset
+  end
+
+  def participants_play
+    player_turn
+    dealer_turn unless player.busted?
+    show_round_result_and_update_wins
+  end
+
   def play_again?
     puts ""
     answer = nil
@@ -190,11 +206,11 @@ class Game
 
     answer.start_with? 'y'
   end
-  
+
   def display_final_winner
     game_winner = who_won_game?
     puts ""
-    
+
     case game_winner
     when 'Player'
       puts "You are the grand winner! Congratulations!"
@@ -203,18 +219,18 @@ class Game
     end
     puts ""
   end
-  
+
   def display_final_game_score
     puts " Final Game Score ".center(45, '*')
     puts "Player wins: #{player.wins}; Dealer wins: #{dealer.wins}".center(45)
     puts "*" * 45
   end
-  
+
   def display_final_winner_and_game_score
     display_final_game_score
     display_final_winner
   end
-  
+
   def who_won_game?
     player.wins > dealer.wins ? 'Player' : 'Dealer'
   end
@@ -224,13 +240,13 @@ class Game
     dealer.reset_hand
     self.deck = Deck.new
   end
-  
+
   def reset_game
     reset
     player.reset_wins
     dealer.reset_wins
   end
-  
+
   def next_round_starting
     prompt "Next round is starting..."
     press_enter_to_continue
@@ -252,6 +268,12 @@ class Game
   def dealer_turn
     puts ""
     prompt "Dealer's turn..."
+    dealer_plays
+    prompt "Dealer stays!" unless dealer.busted?
+    display_dealer_hand_and_score unless dealer.stays?
+  end
+
+  def dealer_plays
     loop do
       break if dealer.stays?
       prompt dealer.hits
@@ -260,9 +282,6 @@ class Game
       display_dealer_hand_and_score
       press_enter_to_continue
     end
-
-    prompt "Dealer stays!" unless dealer.busted?
-    display_dealer_hand_and_score unless dealer.stays?
   end
 
   def clear
@@ -275,10 +294,9 @@ class Game
   end
 
   def display_instructions
-    prompt "Try to get as close to 21 as possible!"
+    prompt "Try to get as close to #{WINNING_ROUNDS} as possible!"
     prompt "But if you go over #{WINNING_ROUNDS}, you lose the round immediately. Be careful!"
     prompt "First to win #{WINNING_ROUNDS} rounds wins the game."
-    # puts "(top score limit can be changed in source code)"
     puts ""
   end
 
