@@ -58,9 +58,6 @@ class Participant
   end
 end
 
-class Player < Participant
-end
-
 class Dealer < Participant
   DEALER_LIMIT = 17
 
@@ -133,18 +130,20 @@ class Game
   WINNING_ROUNDS = 3
   MAX_HAND_VALUE_LIMIT = 21
 
-  attr_accessor :player, :dealer, :deck
-
-  def initialize
-    @player = Player.new('Player')
-    @dealer = Dealer.new
-    @deck = Deck.new
-  end
-
   def start
     game_intro
     main_game
     goodbye_message
+  end
+
+  protected
+
+  attr_accessor :player, :dealer, :deck
+
+  def initialize
+    @player = Participant.new('Player')
+    @dealer = Dealer.new
+    @deck = Deck.new
   end
 
   def show_rounds_won
