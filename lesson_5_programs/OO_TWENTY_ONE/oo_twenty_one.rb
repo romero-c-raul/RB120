@@ -7,32 +7,34 @@ class Participant
     @wins = 0
   end
 
-  def current_hand
+  def current_hand #not private
     hand.map(&:value)
   end
 
-  def reset_hand
+  def reset_hand #not private
     self.hand = []
   end
 
-  def reset_wins
+  def reset_wins #not private
     self.wins = 0
   end
 
-  def busted?
+  def busted? # not private
     hand_value > Game::MAX_HAND_VALUE_LIMIT
   end
 
-  def hand_value
+  def hand_value #not private
     numerical_card_values.sum
   end
-
+  
+  private
+  
   def numerical_card_values
     current_score = []
     determine_card_values(current_score)
     current_score
   end
-
+  
   def determine_card_values(current_score)
     card_values.each do |current_value|
       if (2..10).include?(current_value)
@@ -56,6 +58,7 @@ class Participant
   def card_values
     hand.map(&:value)
   end
+  
 end
 
 class Dealer < Participant
