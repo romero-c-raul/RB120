@@ -130,21 +130,21 @@ class Game
   WINNING_ROUNDS = 3
   MAX_HAND_VALUE_LIMIT = 21
 
+  def initialize
+    @player = Participant.new('Player')
+    @dealer = Dealer.new
+    @deck = Deck.new
+  end
+  
   def start
     game_intro
     main_game
     goodbye_message
   end
 
-  protected
+  private
 
   attr_accessor :player, :dealer, :deck
-
-  def initialize
-    @player = Participant.new('Player')
-    @dealer = Dealer.new
-    @deck = Deck.new
-  end
 
   def show_rounds_won
     puts "**Rounds Won: Player: #{player.wins}; Dealer: #{dealer.wins}**"
