@@ -93,16 +93,6 @@ class Deck
     ].flatten
   end
 
-  def create_cards(suit)
-    stack = []
-
-    (2..10).each { |value| stack << Card.new(suit, value) }
-    ['J', 'Q', 'K'].each { |value| stack << Card.new(suit, value) }
-    stack << Card.new(suit, 'A')
-
-    stack
-  end
-
   def deal_card(participant_hand)
     participant_hand << cards.pop
   end
@@ -114,6 +104,19 @@ class Deck
   def to_s
     deck.values
   end
+  
+  private
+  
+  def create_cards(suit)
+    stack = []
+
+    (2..10).each { |value| stack << Card.new(suit, value) }
+    ['J', 'Q', 'K'].each { |value| stack << Card.new(suit, value) }
+    stack << Card.new(suit, 'A')
+
+    stack
+  end
+  
 end
 
 class Card
